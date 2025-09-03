@@ -6,29 +6,88 @@ A simple Python game where you dodge falling blocks. Built with Pygame.
 
 - Player-controlled character
 - Randomly spawning falling blocks
-- Increasing difficulty
 - Score tracking
+- Virtual environment support
+- Easy launcher script
 
 ## Requirements
 
 - Python 3.x
-- Pygame
+- Pygame 2.6.1
 
 ## Installation
 
-```bash
-pip install pygame
-```
+### Option 1: Quick Start with Launcher Script (Recommended)
+
+1. Clone or download this repository
+2. Run the launcher script:
+   ```bash
+   ./start_game.sh
+   ```
+
+### Option 2: Manual Setup
+
+1. Create a virtual environment:
+   ```bash
+   python3 -m venv venv
+   ```
+
+2. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run the game:
+   ```bash
+   python dodge_the_blocks.py
+   ```
 
 ## How to Play
 
-1. Run the game:
-    ```bash
-    python dodge_the_blocks.py
-    ```
-2. Use arrow keys to move.
-3. Avoid the falling blocks.
-4. Try to survive as long as possible!
+1. **Launch the game** using one of the methods above
+2. **Use LEFT and RIGHT arrow keys** to move your character
+3. **Avoid the falling red blocks** - they will end your game
+4. **Try to survive as long as possible** and build up your score
+5. **After game over:**
+   - Press **R** to restart
+   - Press **Q** to quit
+
+## Game Controls
+
+- **← →** Arrow Keys: Move left/right
+- **R**: Restart game after game over
+- **Q**: Quit game after game over
+
+## Project Structure
+
+```
+dodge_the_blocks/
+├── dodge_the_blocks.py    # Main game file
+├── start_game.sh          # Launcher script
+├── requirements.txt        # Python dependencies
+├── venv/                  # Virtual environment (created after setup)
+└── README.md              # This file
+```
+
+## Development
+
+To work on this project:
+
+1. Activate the virtual environment: `source venv/bin/activate`
+2. Make your changes to the code
+3. Test with: `python dodge_the_blocks.py`
+4. Deactivate when done: `deactivate`
+
+## Troubleshooting
+
+- **"Permission denied" on launcher script**: Run `chmod +x start_game.sh`
+- **Virtual environment not found**: Follow the manual setup steps above
+- **Pygame not installed**: Make sure to run `pip install -r requirements.txt` in the activated virtual environment
 
 ## License
 
