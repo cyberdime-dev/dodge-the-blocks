@@ -11,6 +11,7 @@ import traceback
 from config import Config
 from player import Player
 from enemy import Enemy
+from spawn_manager import SpawnManager
 
 
 class Game:
@@ -45,7 +46,12 @@ class Game:
             # Difficulty scaling state
             self._difficulty_level = self.config.INITIAL_DIFFICULTY_LEVEL
             self._current_enemy_speed = self.config.ENEMY_BASE_SPEED
-            self._current_spawn_rate = self.config.ENEMY_SPAWN_RATE
+            
+            # Initialize spawn manager
+            try:
+                self.spawn_manager = SpawnManager(self.config)
+            except Exception as e:
+                raise RuntimeError(f"Failed to create spawn manager: {e}")
             
             # Game objects
             try:
@@ -76,6 +82,8 @@ class Game:
                 self._score = value
                 # Check if difficulty should increase
                 self._check_difficulty_increase()
+                # Update spawn pattern
+                self.spawn_manager.update_pattern(self._score)
             else:
                 print(f"⚠️ Warning: Attempted to set negative score: {value}")
         except (TypeError, ValueError) as e:
@@ -148,9 +156,8 @@ class Game:
             speed_increase = (self._difficulty_level - 1) * self.config.SPEED_SCALE_FACTOR
             self._current_enemy_speed = self.config.ENEMY_BASE_SPEED + speed_increase
             
-            # Calculate new spawn rate (lower number = faster spawning)
-            spawn_rate_increase = (self._difficulty_level - 1) * self.config.SPAWN_RATE_SCALE_FACTOR
-            self._current_spawn_rate = max(10, self.config.ENEMY_SPAWN_RATE - spawn_rate_increase)
+            # Update spawn manager with new difficulty
+            self.spawn_manager.update_spawn_rate(self._difficulty_level)
             
             # Update existing enemies to new speed
             for enemy in self.enemies:
@@ -159,14 +166,35 @@ class Game:
         except Exception as e:
             print(f"⚠️ Warning: Error updating difficulty parameters: {e}")
     
-    def spawn_enemy(self):
-        """Spawn a new enemy at random x position with current difficulty speed"""
+    def spawn_enemy(self, count=1, pattern_type=None):
+        """
+        Spawn enemies using spawn manager.
+        
+        Args:
+            count: Number of enemies to spawn
+            pattern_type: Specific spawn pattern to use
+        """
         try:
-            x = random.randint(0, self.config.WIDTH - self.config.ENEMY_WIDTH)
-            enemy = Enemy(self.config, x, -self.config.ENEMY_HEIGHT, self._current_enemy_speed)
-            self.enemies.append(enemy)
+            # Get spawn positions from spawn manager
+            positions = self.spawn_manager.get_spawn_positions(count, pattern_type)
+            
+            # Create enemies at the positions
+            for x, y in positions:
+                enemy = Enemy(self.config, x, y, self._current_enemy_speed)
+                self.enemies.append(enemy)
+                
         except Exception as e:
-            print(f"⚠️ Warning: Failed to spawn enemy: {e}")
+            print(f"⚠️ Warning: Failed to spawn enemies: {e}")
+    
+    def spawn_burst(self):
+        """Spawn a burst of enemies"""
+        try:
+            if self.spawn_manager.should_spawn_burst(self._score):
+                print(f"💥 Burst spawning {self.config.BURST_SPAWN_COUNT} enemies!")
+                self.spawn_enemy(self.config.BURST_SPAWN_COUNT, "clustered")
+                
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to spawn burst: {e}")
     
     def update_enemies(self):
         """Update enemy positions and check collisions"""
@@ -228,7 +256,9 @@ class Game:
             # Reset difficulty
             self._difficulty_level = self.config.INITIAL_DIFFICULTY_LEVEL
             self._current_enemy_speed = self.config.ENEMY_BASE_SPEED
-            self._current_spawn_rate = self.config.ENEMY_SPAWN_RATE
+            
+            # Reset spawn manager
+            self.spawn_manager = SpawnManager(self.config)
             
         except Exception as e:
             print(f"⚠️ Warning: Failed to reset game: {e}")
@@ -249,6 +279,25 @@ class Game:
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw difficulty: {e}")
     
+    def draw_spawn_info(self):
+        """Draw spawn rate and pattern information"""
+        try:
+            # Spawn rate
+            spawn_rate_text = self.font.render(f"Spawn: {self.spawn_manager.get_spawn_rate_display()}", True, self.config.WHITE)
+            self.screen.blit(spawn_rate_text, self.config.SPAWN_RATE_POSITION)
+            
+            # Current pattern (smaller font)
+            try:
+                small_font = pygame.font.SysFont(None, 24)
+                pattern_text = small_font.render(f"Pattern: {self.spawn_manager.get_current_pattern_name()}", True, self.config.WHITE)
+                pattern_x = self.config.WIDTH - pattern_text.get_width() - 10
+                self.screen.blit(pattern_text, (pattern_x, 10))
+            except:
+                pass
+                
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to draw spawn info: {e}")
+    
     def draw_game_over(self):
         """Draw game over screen"""
         try:
@@ -267,6 +316,12 @@ class Game:
             final_level_x = self.config.WIDTH // 2 - final_level_text.get_width() // 2
             final_level_y = final_score_y + 40
             self.screen.blit(final_level_text, (final_level_x, final_level_y))
+            
+            # Show final spawn pattern
+            final_pattern_text = self.font.render(f"Final Pattern: {self.spawn_manager.get_current_pattern_name()}", True, self.config.WHITE)
+            final_pattern_x = self.config.WIDTH // 2 - final_pattern_text.get_width() // 2
+            final_pattern_y = final_level_y + 40
+            self.screen.blit(final_pattern_text, (final_pattern_x, final_pattern_y))
             
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw game over screen: {e}")
@@ -291,6 +346,7 @@ class Game:
                         
                 self.draw_score()
                 self.draw_difficulty()
+                self.draw_spawn_info()
             else:
                 self.draw_game_over()
                 
@@ -301,11 +357,15 @@ class Game:
         """Update game logic"""
         try:
             if not self.game_over:
-                # Spawn enemies using current spawn rate
+                # Spawn enemies using spawn manager
                 self.enemy_timer += 1
-                if self.enemy_timer >= self._current_spawn_rate:
-                    self.spawn_enemy()
+                if self.spawn_manager.should_spawn_enemy(self.enemy_timer):
+                    self.spawn_enemy(1)  # Spawn single enemy
                     self.enemy_timer = 0
+                
+                # Check for burst spawning
+                if self.difficulty_level >= self.config.BURST_ACTIVATION_LEVEL:
+                    self.spawn_burst()
                 
                 # Update enemies
                 self.update_enemies()
@@ -317,6 +377,7 @@ class Game:
         """Main game loop"""
         print("🎮 Starting game loop...")
         print(f"🎯 Initial difficulty level: {self.difficulty_level}")
+        print(f"🔄 Initial spawn pattern: {self.spawn_manager.get_current_pattern_name()}")
         
         try:
             while True:
@@ -351,4 +412,4 @@ class Game:
             print(f"❌ Fatal error in game loop: {e}")
             traceback.print_exc()
         finally:
-            print("🔄 Game loop ended")
+            print("�� Game loop ended")

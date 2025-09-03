@@ -23,7 +23,7 @@ class Config:
         self.ENEMY_WIDTH = 50
         self.ENEMY_HEIGHT = 50
         self.ENEMY_BASE_SPEED = 5
-        self.ENEMY_SPAWN_RATE = 30
+        self.ENEMY_BASE_SPAWN_RATE = 30  # Frames between spawns (lower = faster)
         
         # Difficulty scaling settings
         self.DIFFICULTY_SCALING_ENABLED = True
@@ -32,6 +32,24 @@ class Config:
         self.DIFFICULTY_INCREASE_INTERVAL = 1000  # Score points between difficulty increases
         self.MAX_DIFFICULTY_LEVEL = 20  # Maximum difficulty level cap
         self.INITIAL_DIFFICULTY_LEVEL = 1
+        
+        # Advanced spawn rate progression
+        self.SPAWN_RATE_PROGRESSION_ENABLED = True
+        self.MIN_SPAWN_RATE = 8  # Fastest possible spawn rate (frames)
+        self.SPAWN_BURST_ENABLED = True  # Enable burst spawning at higher levels
+        self.BURST_SPAWN_COUNT = 3  # Number of enemies in a burst
+        self.BURST_SPAWN_INTERVAL = 200  # Frames between burst spawns
+        self.BURST_ACTIVATION_LEVEL = 5  # Level when burst spawning starts
+        
+        # Dynamic spawn patterns
+        self.DYNAMIC_SPAWN_PATTERNS = True
+        self.PATTERN_CHANGE_INTERVAL = 500  # Score points between pattern changes
+        self.SPAWN_PATTERNS = [
+            "random",      # Random positions
+            "wave",        # Wave-like pattern
+            "clustered",   # Clustered spawns
+            "alternating"  # Alternating sides
+        ]
         
         # Colors
         self.WHITE = (255, 255, 255)
@@ -42,4 +60,5 @@ class Config:
         # UI settings
         self.SCORE_POSITION = (10, 10)
         self.DIFFICULTY_POSITION = (10, 40)  # Position for difficulty display
+        self.SPAWN_RATE_POSITION = (10, 70)  # Position for spawn rate display
         self.GAME_OVER_Y_OFFSET = 0.5  # Center of screen
