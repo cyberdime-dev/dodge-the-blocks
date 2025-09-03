@@ -18,9 +18,12 @@ class Enemy:
             x: Initial x position
             y: Initial y position
         """
-        self.config = config
-        self.rect = pygame.Rect(x, y, config.ENEMY_WIDTH, config.ENEMY_HEIGHT)
-        self._speed = config.ENEMY_SPEED
+        try:
+            self.config = config
+            self.rect = pygame.Rect(x, y, config.ENEMY_WIDTH, config.ENEMY_HEIGHT)
+            self._speed = config.ENEMY_SPEED
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize enemy: {e}")
     
     @property
     def speed(self):
@@ -30,12 +33,20 @@ class Enemy:
     @speed.setter
     def speed(self, value):
         """Set enemy speed with validation"""
-        if value >= 0:
-            self._speed = value
+        try:
+            if value >= 0:
+                self._speed = value
+            else:
+                print(f"⚠️ Warning: Attempted to set negative enemy speed: {value}")
+        except (TypeError, ValueError) as e:
+            print(f"⚠️ Warning: Invalid enemy speed value: {value}, error: {e}")
     
     def move(self):
         """Move enemy downward"""
-        self.rect.y += self._speed
+        try:
+            self.rect.y += self._speed
+        except Exception as e:
+            print(f"⚠️ Warning: Enemy movement error: {e}")
     
     def draw(self, screen):
         """
@@ -44,7 +55,10 @@ class Enemy:
         Args:
             screen: Pygame surface to draw on
         """
-        pygame.draw.rect(screen, self.config.RED, self.rect)
+        try:
+            pygame.draw.rect(screen, self.config.RED, self.rect)
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to draw enemy: {e}")
     
     def is_off_screen(self, screen_height):
         """
@@ -56,7 +70,11 @@ class Enemy:
         Returns:
             bool: True if enemy is off screen, False otherwise
         """
-        return self.rect.top > screen_height
+        try:
+            return self.rect.top > screen_height
+        except Exception as e:
+            print(f"⚠️ Warning: Error checking if enemy is off screen: {e}")
+            return False
     
     def collides_with(self, player):
         """
@@ -68,8 +86,16 @@ class Enemy:
         Returns:
             bool: True if collision detected, False otherwise
         """
-        return self.rect.colliderect(player.rect)
+        try:
+            return self.rect.colliderect(player.rect)
+        except Exception as e:
+            print(f"⚠️ Warning: Error checking collision: {e}")
+            return False
     
     def get_position(self):
         """Get current enemy position"""
-        return (self.rect.x, self.rect.y)
+        try:
+            return (self.rect.x, self.rect.y)
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to get enemy position: {e}")
+            return (0, 0)

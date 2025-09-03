@@ -18,9 +18,12 @@ class Player:
             x: Initial x position
             y: Initial y position
         """
-        self.config = config
-        self.rect = pygame.Rect(x, y, config.PLAYER_WIDTH, config.PLAYER_HEIGHT)
-        self._speed = config.PLAYER_SPEED
+        try:
+            self.config = config
+            self.rect = pygame.Rect(x, y, config.PLAYER_WIDTH, config.PLAYER_HEIGHT)
+            self._speed = config.PLAYER_SPEED
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize player: {e}")
         
     @property
     def speed(self):
@@ -30,8 +33,13 @@ class Player:
     @speed.setter
     def speed(self, value):
         """Set player speed with validation"""
-        if value >= 0:
-            self._speed = value
+        try:
+            if value >= 0:
+                self._speed = value
+            else:
+                print(f"⚠️ Warning: Attempted to set negative player speed: {value}")
+        except (TypeError, ValueError) as e:
+            print(f"⚠️ Warning: Invalid player speed value: {value}, error: {e}")
     
     def move(self, keys, screen_width):
         """
@@ -41,10 +49,13 @@ class Player:
             keys: Pygame key state
             screen_width: Width of the game screen
         """
-        if keys[pygame.K_LEFT] and self.rect.left > 0:
-            self.rect.x -= self._speed
-        if keys[pygame.K_RIGHT] and self.rect.right < screen_width:
-            self.rect.x += self._speed
+        try:
+            if keys[pygame.K_LEFT] and self.rect.left > 0:
+                self.rect.x -= self._speed
+            if keys[pygame.K_RIGHT] and self.rect.right < screen_width:
+                self.rect.x += self._speed
+        except Exception as e:
+            print(f"⚠️ Warning: Player movement error: {e}")
     
     def draw(self, screen):
         """
@@ -53,7 +64,10 @@ class Player:
         Args:
             screen: Pygame surface to draw on
         """
-        pygame.draw.rect(screen, self.config.BLUE, self.rect)
+        try:
+            pygame.draw.rect(screen, self.config.BLUE, self.rect)
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to draw player: {e}")
     
     def reset_position(self, screen_width, screen_height):
         """
@@ -63,12 +77,19 @@ class Player:
             screen_width: Width of the game screen
             screen_height: Height of the game screen
         """
-        self.rect.x = screen_width // 2 - self.config.PLAYER_WIDTH // 2
-        self.rect.y = screen_height - self.config.PLAYER_HEIGHT - self.config.PLAYER_START_Y_OFFSET
+        try:
+            self.rect.x = screen_width // 2 - self.config.PLAYER_WIDTH // 2
+            self.rect.y = screen_height - self.config.PLAYER_HEIGHT - self.config.PLAYER_START_Y_OFFSET
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to reset player position: {e}")
     
     def get_position(self):
         """Get current player position"""
-        return (self.rect.x, self.rect.y)
+        try:
+            return (self.rect.x, self.rect.y)
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to get player position: {e}")
+            return (0, 0)
     
     def set_position(self, x, y):
         """
@@ -78,7 +99,10 @@ class Player:
             x: New x position
             y: New y position
         """
-        if 0 <= x <= self.config.WIDTH - self.config.PLAYER_WIDTH:
-            self.rect.x = x
-        if 0 <= y <= self.config.HEIGHT - self.config.PLAYER_HEIGHT:
-            self.rect.y = y
+        try:
+            if 0 <= x <= self.config.WIDTH - self.config.PLAYER_WIDTH:
+                self.rect.x = x
+            if 0 <= y <= self.config.HEIGHT - self.config.PLAYER_HEIGHT:
+                self.rect.y = y
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to set player position: {e}")
