@@ -18,6 +18,8 @@ class Config:
         self.PLAYER_HEIGHT = 50
         self.PLAYER_SPEED = 7
         self.PLAYER_START_Y_OFFSET = 20
+        self.PLAYER_STARTING_LIVES = 3  # Number of lives player starts with
+        self.PLAYER_INVINCIBILITY_TIME = 120  # Frames of invincibility after losing a life
         
         # Enemy settings
         self.ENEMY_WIDTH = 50
@@ -27,7 +29,7 @@ class Config:
         
         # Difficulty scaling settings
         self.DIFFICULTY_SCALING_ENABLED = True
-        self.SPEED_SCALE_FACTOR = 0.1  # Speed increase per difficulty level
+        self.SPEED_SCALE_FACTOR = 0.05  # Speed increase per difficulty level (reduced for slower progression)
         self.SPAWN_RATE_SCALE_FACTOR = 0.05  # Spawn rate increase per difficulty level
         
         # Gradual difficulty progression (points required for each level)
@@ -74,4 +76,5 @@ class Config:
         self.SCORE_POSITION = (10, 10)
         self.DIFFICULTY_POSITION = (10, 40)  # Position for difficulty display
         self.SPAWN_RATE_POSITION = (10, 70)  # Position for spawn rate display
+        self.LIVES_POSITION = (10, 100)  # Position for lives display
         self.GAME_OVER_Y_OFFSET = 0.5  # Center of screen

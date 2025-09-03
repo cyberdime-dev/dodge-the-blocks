@@ -12,7 +12,7 @@ class Player:
     def __init__(self, config, x, y):
         """
         Initialize player with configuration and position.
-        
+
         Args:
             config: Game configuration object
             x: Initial x position
@@ -22,6 +22,7 @@ class Player:
             self.config = config
             self.rect = pygame.Rect(x, y, config.PLAYER_WIDTH, config.PLAYER_HEIGHT)
             self._speed = config.PLAYER_SPEED
+            self.invincibility_timer = 0  # Timer for invincibility after losing a life
         except Exception as e:
             raise RuntimeError(f"Failed to initialize player: {e}")
         
@@ -60,12 +61,16 @@ class Player:
     def draw(self, screen):
         """
         Draw player on screen.
-        
+
         Args:
             screen: Pygame surface to draw on
         """
         try:
-            pygame.draw.rect(screen, self.config.BLUE, self.rect)
+            # Draw invincible effect if active, otherwise normal player
+            if self.is_invincible():
+                self.draw_invincible_effect(screen)
+            else:
+                pygame.draw.rect(screen, self.config.BLUE, self.rect)
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw player: {e}")
     
@@ -94,7 +99,7 @@ class Player:
     def set_position(self, x, y):
         """
         Set player position with bounds checking.
-        
+
         Args:
             x: New x position
             y: New y position
@@ -106,3 +111,25 @@ class Player:
                 self.rect.y = y
         except Exception as e:
             print(f"⚠️ Warning: Failed to set player position: {e}")
+
+    def is_invincible(self):
+        """Check if player is currently invincible"""
+        return self.invincibility_timer > 0
+
+    def make_invincible(self):
+        """Make player invincible for a set period"""
+        self.invincibility_timer = self.config.PLAYER_INVINCIBILITY_TIME
+
+    def update_invincibility(self):
+        """Update invincibility timer (call this every frame)"""
+        if self.invincibility_timer > 0:
+            self.invincibility_timer -= 1
+
+    def draw_invincible_effect(self, screen):
+        """Draw visual effect when player is invincible"""
+        if self.is_invincible():
+            # Create a flashing effect by drawing a different color
+            alpha = (self.invincibility_timer % 20) // 10  # Flash every 10 frames
+            if alpha == 0:
+                # Draw with a different color to show invincibility
+                pygame.draw.rect(screen, (0, 255, 255), self.rect)  # Cyan color

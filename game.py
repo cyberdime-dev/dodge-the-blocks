@@ -42,7 +42,8 @@ class Game:
             self._score = 0
             self._game_over = False
             self._enemy_timer = 0
-            
+            self._lives = self.config.PLAYER_STARTING_LIVES
+
             # Difficulty scaling state
             self._difficulty_level = self.config.INITIAL_DIFFICULTY_LEVEL
             self._current_enemy_speed = self.config.ENEMY_BASE_SPEED
@@ -106,7 +107,7 @@ class Game:
     def enemy_timer(self):
         """Get enemy spawn timer"""
         return self._enemy_timer
-    
+
     @enemy_timer.setter
     def enemy_timer(self, value):
         """Set enemy spawn timer"""
@@ -117,12 +118,32 @@ class Game:
                 print(f"⚠️ Warning: Attempted to set negative timer: {value}")
         except (TypeError, ValueError) as e:
             print(f"⚠️ Warning: Invalid timer value: {value}, error: {e}")
-    
+
+    @property
+    def lives(self):
+        """Get current lives"""
+        return self._lives
+
+    @lives.setter
+    def lives(self, value):
+        """Set lives with validation"""
+        try:
+            if value >= 0:
+                self._lives = value
+                # Check if game should end when lives reach zero
+                if self._lives == 0:
+                    self.game_over = True
+                    print("💔 Game Over! No lives remaining.")
+            else:
+                print(f"⚠️ Warning: Attempted to set negative lives: {value}")
+        except (TypeError, ValueError) as e:
+            print(f"⚠️ Warning: Invalid lives value: {value}, error: {e}")
+
     @property
     def difficulty_level(self):
         """Get current difficulty level"""
         return self._difficulty_level
-    
+
     @property
     def current_enemy_speed(self):
         """Get current enemy speed"""
@@ -219,17 +240,30 @@ class Game:
             for enemy in self.enemies[:]:
                 try:
                     enemy.move()
-                    
-                    # Check collision with player
-                    if enemy.collides_with(self.player):
-                        self.game_over = True
-                        return
-                    
+
+                    # Check collision with player (only if not invincible)
+                    if enemy.collides_with(self.player) and not self.player.is_invincible():
+                        # Lose a life and become invincible
+                        self.lives -= 1
+                        self.player.make_invincible()
+                        print(f"💔 Life lost! {self.lives} lives remaining.")
+
+                        # Remove the enemy that caused the collision
+                        try:
+                            self.enemies.remove(enemy)
+                        except:
+                            pass
+
+                        # If no lives left, game over will be triggered by lives setter
+                        if self.lives == 0:
+                            return
+                        continue
+
                     # Remove enemies that are off screen and award points
                     if enemy.is_off_screen(self.config.HEIGHT):
                         self.enemies.remove(enemy)
                         self.score += 1
-                        
+
                 except Exception as e:
                     print(f"⚠️ Warning: Error updating enemy: {e}")
                     # Remove problematic enemy
@@ -237,7 +271,7 @@ class Game:
                         self.enemies.remove(enemy)
                     except:
                         pass
-                        
+
         except Exception as e:
             print(f"⚠️ Warning: Error in enemy update loop: {e}")
     
@@ -269,14 +303,15 @@ class Game:
             self.score = 0
             self.game_over = False
             self.enemy_timer = 0
-            
+            self.lives = self.config.PLAYER_STARTING_LIVES  # Reset lives
+
             # Reset difficulty
             self._difficulty_level = self.config.INITIAL_DIFFICULTY_LEVEL
             self._current_enemy_speed = self.config.ENEMY_BASE_SPEED
-            
+
             # Reset spawn manager
             self.spawn_manager = SpawnManager(self.config)
-            
+
         except Exception as e:
             print(f"⚠️ Warning: Failed to reset game: {e}")
     
@@ -341,7 +376,15 @@ class Game:
                 
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw spawn info: {e}")
-    
+
+    def draw_lives(self):
+        """Draw lives information on screen"""
+        try:
+            lives_text = self.font.render(f"Lives: {self.lives}", True, self.config.WHITE)
+            self.screen.blit(lives_text, self.config.LIVES_POSITION)
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to draw lives: {e}")
+
     def draw_game_over(self):
         """Draw game over screen"""
         try:
@@ -391,6 +434,7 @@ class Game:
                 self.draw_score()
                 self.draw_difficulty()
                 self.draw_spawn_info()
+                self.draw_lives()
             else:
                 self.draw_game_over()
                 
@@ -434,10 +478,13 @@ class Game:
                     
                     # Handle input
                     self.handle_input()
-                    
+
                     # Update game state
                     self.update()
-                    
+
+                    # Update player invincibility
+                    self.player.update_invincibility()
+
                     # Draw everything
                     self.draw()
                     
