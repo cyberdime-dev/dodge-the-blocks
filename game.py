@@ -42,6 +42,11 @@ class Game:
             self._game_over = False
             self._enemy_timer = 0
             
+            # Difficulty scaling state
+            self._difficulty_level = self.config.INITIAL_DIFFICULTY_LEVEL
+            self._current_enemy_speed = self.config.ENEMY_BASE_SPEED
+            self._current_spawn_rate = self.config.ENEMY_SPAWN_RATE
+            
             # Game objects
             try:
                 self.player = Player(
@@ -69,6 +74,8 @@ class Game:
         try:
             if value >= 0:
                 self._score = value
+                # Check if difficulty should increase
+                self._check_difficulty_increase()
             else:
                 print(f"⚠️ Warning: Attempted to set negative score: {value}")
         except (TypeError, ValueError) as e:
@@ -103,11 +110,60 @@ class Game:
         except (TypeError, ValueError) as e:
             print(f"⚠️ Warning: Invalid timer value: {value}, error: {e}")
     
+    @property
+    def difficulty_level(self):
+        """Get current difficulty level"""
+        return self._difficulty_level
+    
+    @property
+    def current_enemy_speed(self):
+        """Get current enemy speed"""
+        return self._current_enemy_speed
+    
+    def _check_difficulty_increase(self):
+        """Check if difficulty should increase based on score"""
+        if not self.config.DIFFICULTY_SCALING_ENABLED:
+            return
+            
+        try:
+            # Calculate new difficulty level based on score
+            new_level = (self._score // self.config.DIFFICULTY_INCREASE_INTERVAL) + 1
+            
+            # Cap difficulty at maximum level
+            new_level = min(new_level, self.config.MAX_DIFFICULTY_LEVEL)
+            
+            # If difficulty increased, update game parameters
+            if new_level > self._difficulty_level:
+                self._difficulty_level = new_level
+                self._update_difficulty_parameters()
+                print(f"🎯 Difficulty increased to level {self._difficulty_level}!")
+                
+        except Exception as e:
+            print(f"⚠️ Warning: Error updating difficulty: {e}")
+    
+    def _update_difficulty_parameters(self):
+        """Update game parameters based on current difficulty level"""
+        try:
+            # Calculate new enemy speed
+            speed_increase = (self._difficulty_level - 1) * self.config.SPEED_SCALE_FACTOR
+            self._current_enemy_speed = self.config.ENEMY_BASE_SPEED + speed_increase
+            
+            # Calculate new spawn rate (lower number = faster spawning)
+            spawn_rate_increase = (self._difficulty_level - 1) * self.config.SPAWN_RATE_SCALE_FACTOR
+            self._current_spawn_rate = max(10, self.config.ENEMY_SPAWN_RATE - spawn_rate_increase)
+            
+            # Update existing enemies to new speed
+            for enemy in self.enemies:
+                enemy.speed = self._current_enemy_speed
+                
+        except Exception as e:
+            print(f"⚠️ Warning: Error updating difficulty parameters: {e}")
+    
     def spawn_enemy(self):
-        """Spawn a new enemy at random x position"""
+        """Spawn a new enemy at random x position with current difficulty speed"""
         try:
             x = random.randint(0, self.config.WIDTH - self.config.ENEMY_WIDTH)
-            enemy = Enemy(self.config, x, -self.config.ENEMY_HEIGHT)
+            enemy = Enemy(self.config, x, -self.config.ENEMY_HEIGHT, self._current_enemy_speed)
             self.enemies.append(enemy)
         except Exception as e:
             print(f"⚠️ Warning: Failed to spawn enemy: {e}")
@@ -168,6 +224,12 @@ class Game:
             self.score = 0
             self.game_over = False
             self.enemy_timer = 0
+            
+            # Reset difficulty
+            self._difficulty_level = self.config.INITIAL_DIFFICULTY_LEVEL
+            self._current_enemy_speed = self.config.ENEMY_BASE_SPEED
+            self._current_spawn_rate = self.config.ENEMY_SPAWN_RATE
+            
         except Exception as e:
             print(f"⚠️ Warning: Failed to reset game: {e}")
     
@@ -179,6 +241,14 @@ class Game:
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw score: {e}")
     
+    def draw_difficulty(self):
+        """Draw difficulty level on screen"""
+        try:
+            difficulty_text = self.font.render(f"Level: {self.difficulty_level}", True, self.config.WHITE)
+            self.screen.blit(difficulty_text, self.config.DIFFICULTY_POSITION)
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to draw difficulty: {e}")
+    
     def draw_game_over(self):
         """Draw game over screen"""
         try:
@@ -186,6 +256,18 @@ class Game:
             text_x = self.config.WIDTH // 2 - text.get_width() // 2
             text_y = int(self.config.HEIGHT * self.config.GAME_OVER_Y_OFFSET)
             self.screen.blit(text, (text_x, text_y))
+            
+            # Show final score and difficulty
+            final_score_text = self.font.render(f"Final Score: {self.score}", True, self.config.WHITE)
+            final_score_x = self.config.WIDTH // 2 - final_score_text.get_width() // 2
+            final_score_y = text_y + 50
+            self.screen.blit(final_score_text, (final_score_x, final_score_y))
+            
+            final_level_text = self.font.render(f"Final Level: {self.difficulty_level}", True, self.config.WHITE)
+            final_level_x = self.config.WIDTH // 2 - final_level_text.get_width() // 2
+            final_level_y = final_score_y + 40
+            self.screen.blit(final_level_text, (final_level_x, final_level_y))
+            
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw game over screen: {e}")
     
@@ -208,6 +290,7 @@ class Game:
                         print(f"⚠️ Warning: Failed to draw enemy: {e}")
                         
                 self.draw_score()
+                self.draw_difficulty()
             else:
                 self.draw_game_over()
                 
@@ -218,9 +301,9 @@ class Game:
         """Update game logic"""
         try:
             if not self.game_over:
-                # Spawn enemies
+                # Spawn enemies using current spawn rate
                 self.enemy_timer += 1
-                if self.enemy_timer >= self.config.ENEMY_SPAWN_RATE:
+                if self.enemy_timer >= self._current_spawn_rate:
                     self.spawn_enemy()
                     self.enemy_timer = 0
                 
@@ -233,6 +316,7 @@ class Game:
     def run(self):
         """Main game loop"""
         print("🎮 Starting game loop...")
+        print(f"🎯 Initial difficulty level: {self.difficulty_level}")
         
         try:
             while True:

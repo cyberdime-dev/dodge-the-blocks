@@ -9,7 +9,7 @@ import pygame
 class Enemy:
     """Enemy that falls from the top of the screen"""
     
-    def __init__(self, config, x, y):
+    def __init__(self, config, x, y, speed=None):
         """
         Initialize enemy with configuration and position.
         
@@ -17,11 +17,13 @@ class Enemy:
             config: Game configuration object
             x: Initial x position
             y: Initial y position
+            speed: Optional custom speed (uses config default if None)
         """
         try:
             self.config = config
             self.rect = pygame.Rect(x, y, config.ENEMY_WIDTH, config.ENEMY_HEIGHT)
-            self._speed = config.ENEMY_SPEED
+            # Use provided speed or base speed from config
+            self._speed = speed if speed is not None else config.ENEMY_BASE_SPEED
         except Exception as e:
             raise RuntimeError(f"Failed to initialize enemy: {e}")
     
