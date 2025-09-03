@@ -29,8 +29,21 @@ class Config:
         self.DIFFICULTY_SCALING_ENABLED = True
         self.SPEED_SCALE_FACTOR = 0.1  # Speed increase per difficulty level
         self.SPAWN_RATE_SCALE_FACTOR = 0.05  # Spawn rate increase per difficulty level
-        self.DIFFICULTY_INCREASE_INTERVAL = 1000  # Score points between difficulty increases
-        self.MAX_DIFFICULTY_LEVEL = 20  # Maximum difficulty level cap
+        
+        # Gradual difficulty progression (points required for each level)
+        self.DIFFICULTY_PROGRESSION = {
+            1: 0,      # Level 1 starts at 0 points
+            2: 20,     # Level 2 at 20 points
+            3: 40,     # Level 3 at 40 points
+            4: 80,     # Level 4 at 80 points
+            5: 160,    # Level 5 at 160 points
+            6: 320,    # Level 6 at 320 points
+            7: 640,    # Level 7 at 640 points
+            8: 1280,   # Level 8 at 1280 points
+            9: 2560,   # Level 9 at 2560 points
+            10: 5120   # Level 10 at 5120 points
+        }
+        self.MAX_DIFFICULTY_LEVEL = 10  # Maximum difficulty level cap
         self.INITIAL_DIFFICULTY_LEVEL = 1
         
         # Advanced spawn rate progression

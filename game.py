@@ -134,8 +134,13 @@ class Game:
             return
             
         try:
-            # Calculate new difficulty level based on score
-            new_level = (self._score // self.config.DIFFICULTY_INCREASE_INTERVAL) + 1
+            # Find the highest level the player has reached based on score
+            new_level = 1
+            for level, required_score in self.config.DIFFICULTY_PROGRESSION.items():
+                if self._score >= required_score:
+                    new_level = level
+                else:
+                    break
             
             # Cap difficulty at maximum level
             new_level = min(new_level, self.config.MAX_DIFFICULTY_LEVEL)
@@ -145,9 +150,21 @@ class Game:
                 self._difficulty_level = new_level
                 self._update_difficulty_parameters()
                 print(f"🎯 Difficulty increased to level {self._difficulty_level}!")
+                print(f"📊 Next level requires {self._get_next_level_requirement()} points")
                 
         except Exception as e:
             print(f"⚠️ Warning: Error updating difficulty: {e}")
+    
+    def _get_next_level_requirement(self):
+        """Get the score requirement for the next level"""
+        try:
+            next_level = self._difficulty_level + 1
+            if next_level in self.config.DIFFICULTY_PROGRESSION:
+                return self.config.DIFFICULTY_PROGRESSION[next_level]
+            else:
+                return "MAX LEVEL"
+        except:
+            return "N/A"
     
     def _update_difficulty_parameters(self):
         """Update game parameters based on current difficulty level"""
@@ -272,10 +289,37 @@ class Game:
             print(f"⚠️ Warning: Failed to draw score: {e}")
     
     def draw_difficulty(self):
-        """Draw difficulty level on screen"""
+        """Draw difficulty level and progress on screen"""
         try:
+            # Current level
             difficulty_text = self.font.render(f"Level: {self.difficulty_level}", True, self.config.WHITE)
             self.screen.blit(difficulty_text, self.config.DIFFICULTY_POSITION)
+            
+            # Progress to next level (smaller font)
+            try:
+                small_font = pygame.font.SysFont(None, 24)
+                
+                if self._difficulty_level < self.config.MAX_DIFFICULTY_LEVEL:
+                    current_level_score = self.config.DIFFICULTY_PROGRESSION.get(self._difficulty_level, 0)
+                    next_level_score = self.config.DIFFICULTY_PROGRESSION.get(self._difficulty_level + 1, 0)
+                    
+                    if next_level_score > current_level_score:
+                        progress = self._score - current_level_score
+                        total_needed = next_level_score - current_level_score
+                        progress_text = f"Next: {progress}/{total_needed} pts"
+                    else:
+                        progress_text = "Next: MAX LEVEL"
+                else:
+                    progress_text = "MAX LEVEL REACHED!"
+                
+                progress_surface = small_font.render(progress_text, True, self.config.WHITE)
+                progress_x = self.config.DIFFICULTY_POSITION[0]
+                progress_y = self.config.DIFFICULTY_POSITION[1] + 25
+                self.screen.blit(progress_surface, (progress_x, progress_y))
+                
+            except Exception as e:
+                print(f"⚠️ Warning: Failed to draw difficulty progress: {e}")
+                
         except Exception as e:
             print(f"⚠️ Warning: Failed to draw difficulty: {e}")
     
