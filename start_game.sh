@@ -16,8 +16,8 @@ if [ $? -eq 0 ]; then
     echo "Press R to restart, Q to quit"
     echo ""
     
-    # Start the game
-    python dodge_the_blocks.py
+    # Start the game using the new modular structure
+    python main.py
 else
     echo "❌ Failed to activate virtual environment"
     echo "Please make sure the virtual environment exists:"

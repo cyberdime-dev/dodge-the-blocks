@@ -9,6 +9,7 @@ A simple Python game where you dodge falling blocks. Built with Pygame.
 - Score tracking
 - Virtual environment support
 - Easy launcher script
+- Modular, well-organized code structure
 
 ## Requirements
 
@@ -44,7 +45,7 @@ A simple Python game where you dodge falling blocks. Built with Pygame.
 
 4. Run the game:
    ```bash
-   python dodge_the_blocks.py
+   python main.py
    ```
 
 ## How to Play
@@ -67,11 +68,15 @@ A simple Python game where you dodge falling blocks. Built with Pygame.
 
 ```
 dodge_the_blocks/
-├── dodge_the_blocks.py    # Main game file
-├── start_game.sh          # Launcher script
+├── main.py                 # Main entry point
+├── game.py                 # Game controller class
+├── player.py               # Player class and logic
+├── enemy.py                # Enemy class and logic
+├── config.py               # Game configuration and constants
+├── start_game.sh           # Launcher script
 ├── requirements.txt        # Python dependencies
-├── venv/                  # Virtual environment (created after setup)
-└── README.md              # This file
+├── venv/                   # Virtual environment (created after setup)
+└── README.md               # This file
 ```
 
 ## Development
@@ -79,15 +84,30 @@ dodge_the_blocks/
 To work on this project:
 
 1. Activate the virtual environment: `source venv/bin/activate`
-2. Make your changes to the code
-3. Test with: `python dodge_the_blocks.py`
+2. Make your changes to the appropriate module:
+   - `config.py` for game settings
+   - `player.py` for player behavior
+   - `enemy.py` for enemy behavior
+   - `game.py` for game logic
+3. Test with: `python main.py`
 4. Deactivate when done: `deactivate`
+
+## Code Organization
+
+The game is now organized into logical modules:
+
+- **`config.py`**: Centralized configuration management
+- **`player.py`**: Player movement, drawing, and state
+- **`enemy.py`**: Enemy behavior and collision detection
+- **`game.py`**: Main game loop and coordination
+- **`main.py`**: Entry point and pygame initialization
 
 ## Troubleshooting
 
 - **"Permission denied" on launcher script**: Run `chmod +x start_game.sh`
 - **Virtual environment not found**: Follow the manual setup steps above
 - **Pygame not installed**: Make sure to run `pip install -r requirements.txt` in the activated virtual environment
+- **Import errors**: Ensure all Python files are in the same directory
 
 ## License
 
