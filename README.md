@@ -1,6 +1,6 @@
 # Dodge the Blocks
 
-A simple Python game where you dodge falling blocks. Built with Pygame.
+A simple Python game where you dodge falling blocks. Built with Pygame. Have fun!
 
 ## Features
 
