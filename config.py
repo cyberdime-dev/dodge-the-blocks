@@ -92,7 +92,7 @@ class Config:
         # UI settings
         self.SCORE_POSITION = (10, 10)
         self.DIFFICULTY_POSITION = (10, 40)  # Position for difficulty display
-        self.SPAWN_RATE_POSITION = (10, 70)  # Position for spawn rate display
-        self.LIVES_POSITION = (10, 100)  # Position for lives display
-        self.POWER_UP_POSITION = (10, 130)  # Position for active power-up display
+        self.SPAWN_RATE_POSITION = (10, 100)  # Position for spawn rate display (moved down to avoid overlap)
+        self.LIVES_POSITION = (10, 130)  # Position for lives display (moved down)
+        self.POWER_UP_POSITION = (10, 160)  # Position for active power-up display (moved down)
         self.GAME_OVER_Y_OFFSET = 0.5  # Center of screen
