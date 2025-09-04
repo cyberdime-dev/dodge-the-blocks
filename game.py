@@ -67,6 +67,11 @@ class Game:
 
             self.enemies = []
             self.power_ups = []  # List of active power-ups in the game world
+            self.active_power_ups = []  # List of currently active power-up effects
+
+            # Baseline speeds for restoring after power-up effects
+            self._original_player_speed = self.player.speed
+            self._original_enemy_speed = self._current_enemy_speed
             
         except Exception as e:
             print(f"❌ Failed to initialize game: {e}")
@@ -202,6 +207,9 @@ class Game:
             # Update existing enemies to new speed
             for enemy in self.enemies:
                 enemy.speed = self._current_enemy_speed
+            
+            # Keep baseline enemy speed in sync with current difficulty
+            self._original_enemy_speed = self._current_enemy_speed
                 
         except Exception as e:
             print(f"⚠️ Warning: Error updating difficulty parameters: {e}")
@@ -452,7 +460,8 @@ class Game:
             self.player.reset_position(self.config.WIDTH, self.config.HEIGHT)
             self.enemies.clear()
             self.power_ups.clear()  # Clear power-ups
-            self.active_power_ups.clear()  # Clear active power-up effects
+            if hasattr(self, 'active_power_ups'):
+                self.active_power_ups.clear()  # Clear active power-up effects
             self.score = 0
             self.game_over = False
             self.enemy_timer = 0
@@ -466,7 +475,9 @@ class Game:
             self.spawn_manager = SpawnManager(self.config)
 
             # Restore original speeds
-            self.player.restore_speed(self._original_player_speed)
+            if hasattr(self, '_original_player_speed'):
+                self.player.restore_speed(self._original_player_speed)
+            self._original_enemy_speed = self._current_enemy_speed
 
         except Exception as e:
             print(f"⚠️ Warning: Failed to reset game: {e}")

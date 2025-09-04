@@ -13,8 +13,8 @@ A simple Python game where you dodge falling blocks. Built with Pygame. Have fun
 
 ## Requirements
 
-- Python 3.x
-- Pygame 2.6.1
+- [Python 3.x](https://www.python.org/)
+- [Pygame 2.6.1](https://www.pygame.org/)
 
 ## Installation
 
