@@ -20,6 +20,12 @@ class Config:
         self.PLAYER_START_Y_OFFSET = 20
         self.PLAYER_STARTING_LIVES = 3  # Number of lives player starts with
         self.PLAYER_INVINCIBILITY_TIME = 120  # Frames of invincibility after losing a life
+
+        # Power-up settings
+        self.POWER_UP_SPAWN_CHANCE = 0.02  # Chance per frame to spawn power-up
+        self.POWER_UP_SPEED_BOOST_MULTIPLIER = 1.5  # How much faster player moves
+        self.POWER_UP_SLOW_ENEMIES_FACTOR = 0.5  # How much slower enemies move
+        self.POWER_UP_SCORE_MULTIPLIER = 2  # Score multiplier value
         
         # Enemy settings
         self.ENEMY_WIDTH = 50
@@ -72,9 +78,21 @@ class Config:
         self.RED = (255, 0, 0)
         self.BLUE = (0, 100, 255)
         
+        # Power-up settings
+        self.POWER_UP_SPAWN_CHANCE = 0.005  # Chance per frame to spawn power-up
+        self.POWER_UP_DURATION = 600  # Frames (10 seconds at 60 FPS)
+        self.POWER_UP_SIZE = 30  # Size of power-up squares
+        self.POWER_UP_TYPES = {
+            "speed_boost": {"color": (255, 255, 0), "effect": "player_speed"},  # Yellow - speed boost
+            "slow_motion": {"color": (0, 255, 255), "effect": "enemy_speed"},   # Cyan - slow enemies
+            "extra_life": {"color": (255, 0, 255), "effect": "lives"},          # Magenta - extra life
+            "shield": {"color": (255, 165, 0), "effect": "invincibility"}       # Orange - temporary shield
+        }
+
         # UI settings
         self.SCORE_POSITION = (10, 10)
         self.DIFFICULTY_POSITION = (10, 40)  # Position for difficulty display
         self.SPAWN_RATE_POSITION = (10, 70)  # Position for spawn rate display
         self.LIVES_POSITION = (10, 100)  # Position for lives display
+        self.POWER_UP_POSITION = (10, 130)  # Position for active power-up display
         self.GAME_OVER_Y_OFFSET = 0.5  # Center of screen
